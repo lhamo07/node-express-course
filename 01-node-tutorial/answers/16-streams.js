@@ -1,5 +1,5 @@
 const { createReadStream } = require("fs");
-const stream = createReadStream("./content/big.txt", {
+const stream = createReadStream("../content/big.txt", {
   encoding: "utf8",
   highWaterMark: 200,
 });
@@ -11,9 +11,9 @@ stream.on("data", (chunk) => {
 });
 
 stream.on("end", () => {
-  console.log(`\nTotal chunks received: ${count}`);
+  console.log(`\nTotal chunks received: ${chunkCount}`);
 });
 
 stream.on("error", (err) => {
-  console.error("Stream error:", err);
+  console.error("Error:", err);
 });
