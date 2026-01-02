@@ -1,29 +1,9 @@
 const { products } = require("./data");
+
 const express = require("express");
 const app = express();
-let peopleRouter = require("./routes/people");
-const logger = (req, res, next) => {
-  const method = req.method;
-  const url = req.url;
-  const time = new Date().toLocaleString();
-  console.log(method, url, time);
-  next();
-};
-app.use(logger);
-
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-app.use("/api/v1/people", peopleRouter);
-
-app.use(express.static("./methods-public"));
-app.post("/login", (req, res) => {
-  const { name } = req.body;
-  if (name) {
-    res.send(`Welcome ${name}`);
-  } else {
-    res.status(401).send("Please provide credentials");
-  }
-});
+console.log("Express Tutorial");
+app.use(express.static("./public"));
 
 app.get("/api/v1/test", (req, res) => {
   res.json({ message: "It works!" });
@@ -42,26 +22,39 @@ app.get("/api/v1/products/:productID", (req, res) => {
 });
 app.get("/api/v1/query", (req, res) => {
   const { search, limit, price } = req.query;
-  let searchUser = [...products]; // start with all products
+  let searchUser = [...products];
+  const limitNum = Number(limit);
+  const priceNum = Number(price);
+  if (limit && (isNaN(limitNum) || limitNum <= 0)) {
+    return res
+      .status(400)
+      .json({ message: "Limit must be a positive number!" });
+  }
+  if (price && (isNaN(priceNum) || priceNum <= 0)) {
+    return res
+      .status(400)
+      .json({ message: "Price must be a non-negative number!" });
+  }
 
   if (search) {
+    const searchToLower = search.toLowerCase();
     searchUser = searchUser.filter((product) => {
-      return product.name.startsWith(search);
+      return product.name.toLowerCase().startsWith(searchToLower);
     });
   }
   if (price) {
-    searchUser = searchUser.filter((product) => product.price < Number(price));
+    searchUser = searchUser.filter((product) => product.price < priceNum);
   }
   if (limit) {
-    searchUser = searchUser.slice(0, parseInt(limit));
+    searchUser = searchUser.slice(0, parseInt(limitNum));
   }
 
-  res.json({ searchUser });
+  res.json({ products: searchUser });
 });
 
-app.all("*", (req, res) => {
-  res.status(404).json({ message: "Not Found!" });
-});
 app.listen(3000, () => {
   console.log("Server is listening on port 3000...");
+});
+app.all("*", (req, res) => {
+  res.status(404).json({ message: "Not Found!" });
 });
