@@ -1,0 +1,3 @@
+1.I have created a middleware function called asyncWrapper to avoid repeating try catch 
+block in every async route handler and to centeralized error handling.
+2. return next(createCustomError(`No task with id : ${taskID}`, 404));
